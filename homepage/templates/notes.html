@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Notes</title>
+    <style>
+        body {
+            background: #f4f6fb;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 16px;
+        }
+        h2 {
+            text-align: center;
+            color: #2d3a4b;
+            margin-bottom: 32px;
+        }
+        .notes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+            gap: 28px;
+        }
+        .note-card {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            padding: 24px 20px 18px 20px;
+            display: flex;
+            flex-direction: column;
+            transition: box-shadow 0.2s;
+        }
+        .note-card:hover {
+            box-shadow: 0 8px 24px rgba(0,0,0,0.13);
+        }
+        .note-topic {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #357ae8;
+            margin-bottom: 8px;
+        }
+        .note-date {
+            font-size: 0.95rem;
+            color: #7b8a99;
+            margin-bottom: 14px;
+        }
+        .note-description {
+            font-size: 1.05rem;
+            color: #2d3a4b;
+            flex: 1;
+        }
+        .no-notes {
+            text-align: center;
+            color: #7b8a99;
+            font-size: 1.1rem;
+            margin-top: 60px;
+        }
+        .add-note-btn {
+            position: fixed;
+            right: 36px;
+            bottom: 36px;
+            z-index: 100;
+            background: #5b9df9;
+            color: #fff;
+            padding: 18px 28px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: background 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 16px rgba(91,157,249,0.18);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .add-note-btn:hover {
+            background: #357ae8;
+            box-shadow: 0 8px 32px rgba(53,122,232,0.18);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>All Notes</h2>
+        <a href="/addnotes/" class="add-note-btn">+ Add Note</a>
+        {% if notes %}
+        <div class="notes-grid">
+            {% for note in notes %}
+            <div class="note-card">
+                <div class="note-topic">{{ note.topic }}</div>
+                <div class="note-date">{{ note.date }}</div>
+                <div class="note-description">{{ note.description }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="no-notes">No notes have been added yet.</div>
+        {% endif %}
+    </div>
+</body>
+</html>
