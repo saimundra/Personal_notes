@@ -54,6 +54,26 @@
             color: #2d3a4b;
             flex: 1;
         }
+        .note-image {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+        .no-image {
+            width: 100%;
+            height: 150px;
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+        }
         .no-notes {
             text-align: center;
             color: #7b8a99;
@@ -82,6 +102,151 @@
             background: #357ae8;
             box-shadow: 0 8px 32px rgba(53,122,232,0.18);
         }
+        
+        /* Button Styles */
+        .action-buttons {
+            margin-top: 16px;
+            display: flex;
+            gap: 10px;
+        }
+        .update-btn, .delete-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .update-btn {
+            background: #5b9df9;
+            color: white;
+        }
+        .update-btn:hover {
+            background: #357ae8;
+        }
+        .delete-btn {
+            background: #ff6b6b;
+            color: white;
+        }
+        .delete-btn:hover {
+            background: #e74c3c;
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 10px;
+            padding: 32px;
+            min-width: 400px;
+            max-width: 90vw;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+        .modal-header {
+            margin-bottom: 24px;
+        }
+        .modal-title {
+            margin: 0;
+            color: #357ae8;
+            font-size: 1.5rem;
+        }
+        .close-btn {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #999;
+        }
+        .close-btn:hover {
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #333;
+            font-weight: 500;
+        }
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #5b9df9;
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-primary {
+            background: #5b9df9;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #357ae8;
+        }
+        .btn-secondary {
+            background: #f1f3f4;
+            color: #333;
+        }
+        .btn-secondary:hover {
+            background: #e8eaed;
+        }
+        .btn-danger {
+            background: #ff6b6b;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #e74c3c;
+        }
+        .delete-confirmation {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .delete-confirmation p {
+            color: #666;
+            font-size: 1.1rem;
+            margin: 0;
+        }
     </style>
 </head>
 <body>
@@ -91,10 +256,30 @@
         {% if notes %}
         <div class="notes-grid">
             {% for note in notes %}
-            <div class="note-card">
+            <div class="note-card" data-note-id="{{ note.id }}">
+                {% if note.image and note.image.name %}
+                    <img src="{{ note.image.url }}" alt="{{ note.topic }}" class="note-image">
+                {% else %}
+                    <div class="no-image">No Image</div>
+                {% endif %}
                 <div class="note-topic">{{ note.topic }}</div>
                 <div class="note-date">{{ note.date }}</div>
                 <div class="note-description">{{ note.description }}</div>
+                <div class="action-buttons">
+                    <button class="update-btn" type="button" 
+                            data-note-id="{{ note.id }}"
+                            data-note-topic="{{ note.topic }}"
+                            data-note-date="{{ note.date }}"
+                            data-note-description="{{ note.description }}"
+                            data-note-image="{% if note.image and note.image.name %}{{ note.image.url }}{% endif %}">
+                        Update
+                    </button>
+                    <button class="delete-btn" type="button" 
+                            data-note-id="{{ note.id }}"
+                            data-note-topic="{{ note.topic }}">
+                        Delete
+                    </button>
+                </div>
             </div>
             {% endfor %}
         </div>
@@ -102,5 +287,133 @@
         <div class="no-notes">No notes have been added yet.</div>
         {% endif %}
     </div>
+
+    <!-- Update Note Modal -->
+    <div id="updateModal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal('updateModal')">&times;</button>
+            <div class="modal-header">
+                <h3 class="modal-title">Update Note</h3>
+            </div>
+            <form id="updateNoteForm" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" id="updateNoteId" name="note_id">
+                <div class="form-group">
+                    <label for="updateTopic">Topic:</label>
+                    <input type="text" id="updateTopic" name="topic" required>
+                </div>
+                <div class="form-group">
+                    <label for="updateDate">Date:</label>
+                    <input type="date" id="updateDate" name="date" required>
+                </div>
+                <div class="form-group">
+                    <label for="updateDescription">Description:</label>
+                    <textarea id="updateDescription" name="description" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="updateImage">Image:</label>
+                    <input type="file" id="updateImage" name="image" accept="image/*">
+                    <div id="currentImage" style="margin-top: 8px; font-size: 0.9rem; color: #666;"></div>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('updateModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Note Modal -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal('deleteModal')">&times;</button>
+            <div class="modal-header">
+                <h3 class="modal-title">Delete Note</h3>
+            </div>
+            <div class="delete-confirmation">
+                <p>Are you sure you want to delete "<span id="deleteNoteTopic"></span>"?</p>
+                <p>This action cannot be undone.</p>
+            </div>
+            <form id="deleteNoteForm" method="POST">
+                {% csrf_token %}
+                <input type="hidden" id="deleteNoteId" name="note_id">
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-danger">Delete Note</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('deleteModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Update modal functionality
+        document.querySelectorAll('.update-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const noteId = this.getAttribute('data-note-id');
+                const noteTopic = this.getAttribute('data-note-topic');
+                const noteDate = this.getAttribute('data-note-date');
+                const noteDescription = this.getAttribute('data-note-description');
+                const noteImage = this.getAttribute('data-note-image');
+                
+                // Populate the form
+                document.getElementById('updateNoteId').value = noteId;
+                document.getElementById('updateTopic').value = noteTopic;
+                document.getElementById('updateDate').value = noteDate;
+                document.getElementById('updateDescription').value = noteDescription;
+                
+                // Show current image info
+                const currentImageDiv = document.getElementById('currentImage');
+                if (noteImage) {
+                    currentImageDiv.innerHTML = `Current image: <a href="${noteImage}" target="_blank">View Image</a>`;
+                } else {
+                    currentImageDiv.innerHTML = 'No image currently uploaded';
+                }
+                
+                // Set form action
+                document.getElementById('updateNoteForm').action = `{% url 'update_note' 0 %}`.replace('0', noteId);
+                
+                // Show modal
+                document.getElementById('updateModal').style.display = 'flex';
+            });
+        });
+
+        // Delete modal functionality
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const noteId = this.getAttribute('data-note-id');
+                const noteTopic = this.getAttribute('data-note-topic');
+                
+                // Populate the form
+                document.getElementById('deleteNoteId').value = noteId;
+                document.getElementById('deleteNoteTopic').textContent = noteTopic;
+                
+                // Set form action
+                document.getElementById('deleteNoteForm').action = `{% url 'delete_note' 0 %}`.replace('0', noteId);
+                
+                // Show modal
+                document.getElementById('deleteModal').style.display = 'flex';
+            });
+        });
+
+        // Close modal function
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                document.getElementById('updateModal').style.display = 'none';
+                document.getElementById('deleteModal').style.display = 'none';
+            }
+        });
+    </script>
 </body>
 </html>
